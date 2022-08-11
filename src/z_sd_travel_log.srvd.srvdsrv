@@ -1,0 +1,15 @@
+@EndUserText.label: 'travel'
+define service Z_sd_travel_log {
+  expose z_c_travel_log as travel;
+  expose z_c_booking_log as Booking;
+  expose Z_C_BOOksuppl_log as BookibgSupplement;
+  expose /DMO/I_Supplement as Supplement;
+  expose /DMO/I_SupplementText as SupplementText;
+  expose /DMO/I_Customer as Customer;
+  expose /DMO/I_Agency as Agency;
+  expose /DMO/I_Carrier as Carier;
+  expose /DMO/I_Connection as FlightConnection;
+  expose /DMO/I_Flight as Flight;
+  expose I_Currency as Currency;
+  expose I_Country as Country;
+}
