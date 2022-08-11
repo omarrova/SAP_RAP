@@ -1,0 +1,86 @@
+managed ;
+//strict; //Comment this line in to enable strict mode. The strict mode is prerequisite to be future proof regarding syntax and to be able to release your BO.
+
+
+define behavior for z_i_travel_log alias travel
+ implementation in class zbp_i_travel_log unique
+persistent table ZTRAVEL_LOG
+lock master
+authorization master ( instance )
+etag master last_changed_by
+{
+  // campos administrativos
+  field (readonly)  last_changed_by , created_at , created_by;
+  // mandadory field thar are required to create travel
+  field (mandatory) agency_id , overall_status , booking_fee , currency_code;
+  // dynamic field control
+  field(features : instance) travel_id;
+  //field(numbering : managed) travel_id;
+  create;
+  update;
+  delete ;
+  //validaciones
+  validation validatedete on save { field begin_date ,end_date ;  }
+  validation validatecustomer on save {field customer_id;}
+  validation validatestatus on save { field overall_status;}
+  // acciones
+  action (features : instance) accepttravel result [1] $self;
+  action (features : instance) rejecttravel result [1] $self;
+  action createbytemplate  result [1] $self;
+  //action createbytemplate external 'createtravelwithcopy' result [1] $self;
+  association _Booking { create; }
+  // MAPPING
+  mapping for ZTRAVEL_LOG corresponding ;
+}
+
+
+///////////////////////////
+///////////////////////////
+
+define behavior for Z_i_BOOKING_LOG alias booking
+ implementation in class zbp_i_booking_log unique
+persistent table ZBOOKING_LOG
+//lock dependent ( travel_id  = travel_id )
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master last_change_at
+{
+  // locl dependet
+  field ( readonly ) travel_id;
+  field (mandatory) carrier_id , connection_id , flight_date , booking_date;
+  update;
+  delete;
+  association _Travel;
+  // validaciones
+  validation validatestatus on save { field booking_status;}
+  // determinaciones
+  determination calculatetotalprice on modify { field flight_price, currency_code;}
+  association _BookingSupplement { create; }
+  // MAPPING
+  mapping for ZBOOKING_LOG corresponding ;
+}
+
+
+///////////////////////////
+///////////////////////////
+
+define behavior for Z_I_BOOKSUPPL_LOG alias supplement
+ implementation in class zbp_i_booksuppl_log unique
+with unmanaged save
+//persistent table ZBOOKSUPPL_LOG
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master last_changed_at
+{
+  field ( readonly ) travel_id, booking_id;
+  field (mandatory) supplement_id, price;
+  update;
+  delete;
+  association _Travel;
+  association _Booking;
+  // determinaciones
+  determination calculatetotalSupplprice on modify { field price, currency;}
+  // MAPPING
+  mapping for zlog_log corresponding ;
+
+}
